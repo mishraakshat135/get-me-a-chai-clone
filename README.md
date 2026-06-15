@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ☕ Get Me A Chai
 
-## Getting Started
+A full-stack creator support platform inspired by Buy Me A Coffee and Patreon. Creators can receive donations from supporters through Razorpay, manage their profiles, and track contributions in real time.
 
-First, run the development server:
+## 🚀 Live Demo
+
+https://get-me-a-chai.vercel.app
+
+## ✨ Features
+
+### Authentication
+
+* GitHub OAuth Login
+* Google OAuth Login
+* Secure session management using NextAuth
+
+### Creator Profiles
+
+* Unique creator pages (`/username`)
+* Custom profile picture and cover image
+* Personalized creator URLs
+* Dynamic metadata for SEO
+
+### Dashboard
+
+* Update profile information
+* Change username
+* Manage Razorpay credentials
+* Customize profile and cover images
+
+### Payments
+
+* Razorpay integration
+* Secure payment verification
+* Donation messages
+* Real-time supporter updates
+* Creator-specific Razorpay accounts
+
+### Supporters
+
+* Top supporters leaderboard
+* Total donations received
+* Total amount raised
+* Personalized donation messages
+
+### Search
+
+* Search creators by username
+* Quick navigation to creator pages
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* Next.js 15 (App Router)
+* React
+* Tailwind CSS
+
+### Backend
+
+* Next.js Server Actions
+* NextAuth.js
+* MongoDB
+* Mongoose
+
+### Payments
+
+* Razorpay
+
+### Deployment
+
+* Vercel
+* MongoDB Atlas
+
+---
+
+## 📂 Project Structure
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+app/
+├── dashboard/
+├── login/
+├── [username]/
+├── api/
+│   └── auth/
+│   └── razorpay/
+actions/
+models/
+components/
+db/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🔒 Authentication Flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. User signs in using GitHub or Google.
+2. New users are automatically added to MongoDB.
+3. Username is generated from the email prefix.
+4. Sessions are managed using NextAuth.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 💳 Payment Flow
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Supporter visits a creator page.
+2. Enters donation amount and message.
+3. Razorpay order is generated.
+4. Payment is verified securely.
+5. Donation is stored in MongoDB.
+6. Supporter list updates automatically.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ⚙️ Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+MONGODB_URI=
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+NEXTAUTH_URL=
+NEXTAUTH_SECRET=
+
+GITHUB_ID=
+GITHUB_SECRET=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+NEXT_PUBLIC_URL=
+```
+
+---
+
+## 🧠 Key Learnings
+
+* OAuth Authentication with NextAuth
+* Dynamic Routing in Next.js App Router
+* MongoDB Data Modeling
+* Razorpay Payment Gateway Integration
+* Server Actions
+* Production Deployment on Vercel
+* Managing User Sessions
+* Secure Payment Verification
+
+---
+
+## 👨‍💻 Author
+
+Akshat Mishra
+
+Built as a full-stack learning project to explore authentication, payments, and scalable web application development.
