@@ -8,10 +8,7 @@ import User from '@/models/User'
 export const initiate = async (amount, to_username, paymentform) => {
 
     await connectDB()
-    console.log("to_username:", to_username)
      let user = await User.findOne({username: to_username})
-     console.log("razorpayid:", user?.razorpayid)
-console.log("razorpaysecret:", user?.razorpaysecret)
     const secret = user.razorpaysecret
     var instance = new Razorpay({ key_id: user.razorpayid, key_secret: secret })
 
@@ -48,6 +45,18 @@ export const fetchpayments = async (username) =>{
     
     return JSON.parse(JSON.stringify(p))
 }
+
+export const fetchStats = async (username)=>{
+    await connectDB()
+    const payments = await Payment.find({
+        to_user: username,
+        done: true
+    }).lean()
+    return{totalPayments: payments.length,
+        totalRaised : payments.reduce((sum, payment) => sum + Number(payment.amount),0)
+    }
+}
+
 
 export const updateProfile = async (data, oldusername) =>{
     await connectDB()

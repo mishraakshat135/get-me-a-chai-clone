@@ -6,7 +6,6 @@ import connectDB from '@/db/connectdb'
 import User from '@/models/User'
 
 export const POST = async (req) => {
-    console.log("RAZORPAY CALLBACK HIT")
     await connectDB()
     let body = await req.formData()
     body = Object.fromEntries(body)
@@ -22,7 +21,7 @@ export const POST = async (req) => {
     let xx = validatePaymentVerification({ "order_id": body.razorpay_order_id, "payment_id": body.razorpay_payment_id }, body.razorpay_signature, secret)
 
     if (xx) {
-        const updatedPayment = await Payment.findOneAndUpdate({ oid: body.razorpay_order_id }, { done: "true" }, { new: true })
+        const updatedPayment = await Payment.findOneAndUpdate({ oid: body.razorpay_order_id }, { done: true }, { new: true })
        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/${updatedPayment.to_user}?paymentdone=true`)  
    
     }

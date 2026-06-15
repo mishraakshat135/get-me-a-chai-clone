@@ -4,23 +4,30 @@ import Script from 'next/script'
 import patreon_banner from '@/public/assets/patreon_banner.gif'
 import cat from '@/public/assets/cat.png'
 import avatar from '@/public/assets/avatar.gif'
-import { initiate, fetchuser, fetchpayments } from '@/actions/useractions'
+import { initiate, fetchuser, fetchpayments, fetchStats } from '@/actions/useractions'
 import { useSession } from 'next-auth/react'
 import Razorpay from 'razorpay'
-import {useSearchParams, useRouter, notFound} from 'next/navigation'
+import { useSearchParams, useRouter, notFound } from 'next/navigation'
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 
 
 const PaymentPage = ({ username }) => {
 
-    const {data:session} = useSession()
+    const { data: session } = useSession()
 
     const [paymentform, setPaymentform] = useState({
         name: "",
         message: "",
         amount: ""
     })
+
+    const [stats, setStats] = useState({
+        totalPayments: 0,
+        totalRaised: 0
+    })
+
+    const [loading, setLoading] = useState(false)
 
     const [currentUser, setcurrentuser] = useState({})
     const [payments, setPayments] = useState([])
@@ -29,7 +36,7 @@ const PaymentPage = ({ username }) => {
 
     useEffect(() => {
         getData()
-    }, [])
+    }, [searchParams])
 
     useEffect(() => {
         if (searchParams.get("paymentdone") === "true") {
@@ -54,48 +61,59 @@ const PaymentPage = ({ username }) => {
         setPaymentform({ ...paymentform, [e.target.name]: e.target.value })
     }
 
-    const getData = async (params) => {
+    const getData = async () => {
         let u = await fetchuser(username)
         setcurrentuser(u)
         let dbpayments = await fetchpayments(username)
-        console.log("pay:", dbpayments)
-
         setPayments(dbpayments)
+        let statistics = await fetchStats(username)
+        setStats(statistics)
     }
 
     const pay = async (amount) => {
-        console.log("to_username=", username)
-        let a = await initiate(amount, username, paymentform)
-        console.log("KEY:", process.env.NEXT_PUBLIC_KEY_ID);
-        console.log("KEY2:", process.env.KEY_ID);
+        try {
+            setLoading(true)
+            let a = await initiate(amount, username, paymentform)
 
-        var options = {
-            "key": currentUser.razorpayid,
-            "amount": amount,
-            "currency": "INR",
-            "name": "Get me a chai",
 
-            "description": "Test Transaction",
-            "image": "https://example.com/your_logo",
-            "order_id": a.id,
-            "callback_url": `${process.env.NEXT_PUBLIC_URL}/api/razorpay`,
-            // "prefill": {
-            //     "name": "Gaurav Kumar",
-            //     "email": "gaurav.kumar@example.com",
-            //     "contact": "+919876543210"
-            // },
-            "notes": {
-                "address": "Razorpay Corporate Office"
-            },
-            "theme": {
-                "color": "#3399cc"
+            var options = {
+                "key": currentUser.razorpayid,
+                "amount": amount,
+                "currency": "INR",
+                "name": "Get me a chai",
+
+                "description": "Test Transaction",
+                "image": "https://example.com/your_logo",
+                "order_id": a.id,
+                "callback_url": `${process.env.NEXT_PUBLIC_URL}/api/razorpay`,
+                // "prefill": {
+                //     "name": "Gaurav Kumar",
+                //     "email": "gaurav.kumar@example.com",
+                //     "contact": "+919876543210"
+                // },
+                "notes": {
+                    "address": "Razorpay Corporate Office"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
             }
+
+
+
+            var rzp1 = new window.Razorpay(options);
+            rzp1.on("payment.failed", function () {
+                toast.error("Payment failed")
+            })
+            rzp1.open();
+
         }
-
-
-
-        var rzp1 = new window.Razorpay(options);
-        rzp1.open();
+        catch (error) {
+            toast.error(error.message)
+        }
+        finally {
+            setLoading(false)
+        }
     }
 
 
@@ -114,7 +132,7 @@ const PaymentPage = ({ username }) => {
                 draggable
                 pauseOnHover
                 theme="light"
-                
+
             />
             <button id="rzp-button1">Pay</button>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
@@ -140,17 +158,19 @@ const PaymentPage = ({ username }) => {
                     Lets help {username} to get a chai
                 </div>
                 <div className="text-slate-400">
-                    {payments.length} Payments . raised ₹{payments.reduce((sum,p)=> (sum + Number(p.amount)/100), 0)}
+                    {stats.totalPayments} Payments . raised ₹{stats.totalRaised / 100}
                 </div>
                 <div className="payment flex flex-col md:flex-row gap-3 w-4/5 mt-11" >
                     <div className="supporters  md:w-1/2 bg-slate-900 rounded-lg p-10">
-                        <h2 className="text-2xl font-bold my-5">Supporters</h2>
+                        <h2 className="text-2xl font-bold my-5">Top Supporters</h2>
                         <ul className="mx-5  ">
-                            {payments.length == 0 && <li>No payments yet</li>}
+                            {payments.length == 0 && <li>Be the first person to support this creator!!</li>}
                             {payments.map((p, i) => {
-                                return <li key={i} className="my-4 text- flex gap-2 jitems-center">
-                                    <img width={33} src={avatar.src} />
+                                return <li key={i} className="my-4 items-center flex gap-3 ">
+                                    <img className="w-10 h-10 rounded-full shrink-0 mt-1" src={avatar.src} />
+                                <div>
                                     <span>{p.name} donated ₹<span className="font-bold">{Number.parseInt(p.amount) / 100}</span> with a message "{p.message}"</span>
+                                </div>
                                 </li>
                             })}
                         </ul>
@@ -164,7 +184,7 @@ const PaymentPage = ({ username }) => {
                             <input onChange={handleChange} value={paymentform.message} name="message" className="w-full p-3 rounded-lg bg-slate-800  " placeholder="Enter Message" />
                             <input onChange={handleChange} value={paymentform.amount} name="amount" className="w-full p-3 rounded-lg bg-slate-800  " placeholder="Enter Amount" />
 
-                            <button disabled={paymentform.name?.length < 3 || paymentform.message?.length < 4 || paymentform.amount?.length<1} onClick={() => pay(Number.parseInt(paymentform.amount) * 100)} type="button" className="disabled:from-purple-100 text-white bg-linear-to-br from-purple-600 to-blue-500 hover:bg-linear-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl text-sm px-4 py-2.5 text-center leading-5">Pay</button>
+                            <button disabled={paymentform.name?.length < 3 || paymentform.message?.length < 4 || paymentform.amount?.length < 1} onClick={() => pay(Number.parseInt(paymentform.amount) * 100)} type="button" className="disabled:from-purple-100 text-white bg-linear-to-br from-purple-600 to-blue-500 hover:bg-linear-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl text-sm px-4 py-2.5 text-center leading-5">{loading ? "Processing..." : "Pay"}</button>
                         </div>
                         <div className="flex gap-2 mt-5">
                             <button className="bg-slate-800 p-3 rounded-lg" onClick={() => pay(1000)}>Pay ₹10</button>
