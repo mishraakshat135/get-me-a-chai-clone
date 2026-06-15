@@ -4,7 +4,7 @@ A full-stack creator support platform inspired by Buy Me A Coffee and Patreon. C
 
 ## 🚀 Live Demo
 
-https://get-me-a-chai.vercel.app
+https://get-me-a-chai-clone.vercel.app/
 
 ## ✨ Features
 
